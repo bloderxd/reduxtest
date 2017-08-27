@@ -14,6 +14,10 @@ object ReduxApp : Application() {
                     is AppActions.Login -> AppState(action.user, state.events)
                     is AppActions.AddEvent -> AppState(state.user, state.events.plus(action.event))
                     is AppActions.RemoveEvent -> AppState(state.user, state.events.minus(action.event))
+                    is AppActions.Execute -> {
+                        action.action()
+                        state
+                    }
                     else -> state
                 }
             },

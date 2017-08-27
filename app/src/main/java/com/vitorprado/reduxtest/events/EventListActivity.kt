@@ -1,6 +1,7 @@
 package com.vitorprado.reduxtest.events
 
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -15,6 +16,7 @@ class EventListActivity : AppCompatActivity() {
 
     private val list by lazy { findViewById(R.id.list) as RecyclerView }
     private val add by lazy { findViewById(R.id.add) as Button }
+    private val showDialog by lazy { findViewById(R.id.show_dialog) }
     private var subscription: () -> Any? = {}
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,6 +24,9 @@ class EventListActivity : AppCompatActivity() {
         setContentView(R.layout.event_listing)
         list.layoutManager = LinearLayoutManager(this)
         add.setOnClickListener { store().dispatch(AppActions.AddEvent(UUID.randomUUID().toString())) }
+        showDialog.setOnClickListener { store().dispatch(AppActions.Execute {
+            showPresentationDialog()
+        })}
     }
 
     override fun onResume() {
@@ -36,5 +41,13 @@ class EventListActivity : AppCompatActivity() {
 
     private fun render(state: AppState) {
         list.adapter = EventAdapter(this, state.events, { store().dispatch(AppActions.RemoveEvent(it)) })
+    }
+
+    private fun showPresentationDialog() {
+        AlertDialog.Builder(this)
+                .setTitle("Welcome!")
+                .setMessage("This app is a redux implementation test!!!")
+                .setPositiveButton("Ok", { dialog, _ -> dialog.dismiss() })
+                .show()
     }
 }
