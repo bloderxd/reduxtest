@@ -9,8 +9,9 @@ import android.widget.Button
 import com.vitorprado.reduxtest.AppActions
 import com.vitorprado.reduxtest.AppState
 import com.vitorprado.reduxtest.R
+import com.vitorprado.reduxtest.redux.Action
 import com.vitorprado.reduxtest.redux.store
-import java.util.*
+import com.vitorprado.reduxtest.thunk.asyncThunk
 
 class EventListActivity : AppCompatActivity() {
 
@@ -23,10 +24,13 @@ class EventListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.event_listing)
         list.layoutManager = LinearLayoutManager(this)
-        add.setOnClickListener { store().dispatch(AppActions.AddEvent(UUID.randomUUID().toString())) }
-        showDialog.setOnClickListener { store().dispatch(AppActions.Execute {
-            showPresentationDialog()
-        })}
+        showDialog.setOnClickListener { store().dispatch(addEventWithThunk()) }
+    }
+
+    private fun addEventWithThunk() : Action<AppState> = asyncThunk {
+        make { dispatch(AppActions.AddEvent("1")) }
+        then { dispatch(AppActions.AddEvent("2")) }
+        then { dispatch(AppActions.AddEvent("3")) }
     }
 
     override fun onResume() {

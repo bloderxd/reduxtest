@@ -1,10 +1,10 @@
 package com.vitorprado.reduxtest.redux
 
-class Store<out State>(initialState: State, initialReducer: (state: State, action: Action) -> State, enhancer: Enhancer<State>? = null) {
+class Store<State>(initialState: State, initialReducer: (state: State, action: Action<State>) -> State, enhancer: Enhancer<State>? = null) {
 
     private val subscribers: MutableList<(State) -> Any?> = mutableListOf()
     private var isCurrentDispatching = false
-    private val reducer: (state: State, action: Action) -> State = enhancer?.enhance(initialReducer) ?: initialReducer
+    private val reducer: (state: State, action: Action<State>) -> State = enhancer?.enhance(initialReducer) ?: initialReducer
     private var state: State = initialState
 
     fun subscribe(subscriber: (State) -> Any?): () -> Any? {
@@ -12,14 +12,14 @@ class Store<out State>(initialState: State, initialReducer: (state: State, actio
         return { subscribers.remove(subscriber) }
     }
 
-    fun dispatch(action: Action) {
-        startDispatching()
+    fun dispatch(action: Action<State>) {
+        startDispatching(action)
         reduce(action)
         stopDispatching()
         notifySubscribers()
     }
 
-    private fun reduce(action: Action) {
+    private fun reduce(action: Action<State>) {
         state = reducer(state, action)
     }
 
@@ -27,13 +27,12 @@ class Store<out State>(initialState: State, initialReducer: (state: State, actio
         subscribers.forEach { it(state) }
     }
 
-    private fun startDispatching() {
-        if (isCurrentDispatching) throw IllegalStateException("You can't dispatch inside a dispatch")
+    private fun startDispatching(action: Action<State>) {
+        if (isCurrentDispatching) throw IllegalStateException("You can't dispatch inside a dispatch -- ${action.javaClass.name}")
         isCurrentDispatching = true
     }
 
     private fun stopDispatching() {
         isCurrentDispatching = false
     }
-
 }
